@@ -17,7 +17,7 @@ searchForm.addEventListener('submit', function(event) {
 async function getWeather(city) {
     
     // Show loading message
-    weatherInfoCoontrainer.innerHTML = `<p>กำลังโหลดข้อมูล...</p>`; // Loading message in Thai
+    weatherInfoContainer.innerHTML = `<p>กำลังโหลดข้อมูล...</p>`; // 'Loading data...' in Thai
 
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=th`; // 'lang=th' for Thai language
     
