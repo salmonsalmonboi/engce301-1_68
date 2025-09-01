@@ -1,72 +1,225 @@
-body {
-    background: #051923;
-    color: #E0E1DD;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
+:root{
+  --text:#E6F1FF;
+  --card-bg: rgba(0,0,0,.25);
+  --stroke: rgba(255,255,255,.15);
+  --shadow: rgba(0,0,0,.35);
 }
 
-.app-container {
-    background: #003554;
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 400px;
+/* ========== พื้นฐาน ========== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+
+/* พื้นหลังแอนิเมชัน—จะเปลี่ยน gradient ตาม class บน <body> */
+.bg-anim{
+  position:fixed; inset:0;
+  background: radial-gradient(1200px 800px at 20% -10%, rgba(255,255,255,.08), transparent 60%),
+              radial-gradient(1000px 700px at 120% 110%, rgba(255,255,255,.06), transparent 50%),
+              linear-gradient(120deg, #051923, #09203f 60%, #000814);
+  filter: saturate(1.1);
+  z-index:-2;
+  animation: slowMove 18s linear infinite alternate;
+}
+@keyframes slowMove{
+  from{ transform: translateY(0) scale(1); }
+  to  { transform: translateY(-12px) scale(1.02); }
+}
+
+/* Glass card */
+.app-container{
+  width:min(92vw, 480px);
+  background: var(--card-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border:1px solid var(--stroke);
+  border-radius: 20px;
+  box-shadow: 0 18px 50px var(--shadow);
+  padding: 2rem;
+  text-align:center;
+  transform: translateY(14px);
+  opacity:0;
+  animation: cardIn .6s ease forwards;
+}
+@keyframes cardIn{ to{ opacity:1; transform: translateY(0);} }
+
+.app-title{ 
+  margin:0 0 1rem; 
+  letter-spacing:.5px;
+  text-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+
+/* ฟอร์ม */
+#search-form{
+  display:flex; gap:.6rem; margin:1.2rem 0 1.4rem;
+}
+#city-input{
+  flex:1; padding:.8rem .9rem; font-size:1rem;
+  border-radius:12px; border:1px solid var(--stroke);
+  background: rgba(0,0,0,.35); color:var(--text);
+  outline:none; transition: border-color .2s, transform .08s;
+}
+#city-input:focus{ border-color: rgba(255,255,255,.35); transform: translateY(-1px); }
+#search-form button{
+  padding:.8rem 1rem; border:none; border-radius:12px; cursor:pointer;
+  font-weight:700; color:#01111f; background:#7dd3fc;
+  box-shadow: 0 8px 18px rgba(125,211,252,.25);
+  transition: transform .08s, filter .2s;
+}
+#search-form button:hover{ filter: brightness(1.05); }
+#search-form button:active{ transform: translateY(1px) scale(.98); }
+
+/* เนื้อหาอากาศ */
+.weather-info{
+  min-height: 170px;
+  display:grid; gap:.4rem; place-items:center;
+}
+.weather-info h2{ margin:.2rem 0 .2rem; }
+.weather-info .temp{ font-size:3rem; font-weight:800; margin:.2rem 0; line-height:1; }
+.weather-info img{ width:100px; height:100px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.35)); animation: float 3.6s ease-in-out infinite; }
+@keyframes float{ 0%,100%{ transform:translateY(0)} 50%{ transform:translateY(-6px)} }
+
+.error{ color:#ff6b6b; font-weight:700; }
+
+/* Skeleton loading */
+.hidden{ display:none  !important; }
+
+#skeleton { position: absolute; inset: 0; border-radius: 12px; }
+.skeleton{ display:grid; gap:.6rem; }
+.sk-line{
+  height:14px; border-radius:10px;
+  background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.2), rgba(255,255,255,.12));
+  background-size: 200% 100%; animation: shimmer 1.2s linear infinite;
+}
+.sk-title{ height:20px; width:60%; margin:0 auto; }
+.sk-icon{ height:100px; width:100px; border-radius:16px; margin:0 auto; }
+.w-60{ width:60%; margin:0 auto; }
+@keyframes shimmer{ from{ background-position:0 0 } to{ background-position:200% 0 } }
+
+/* footer */
+.footer{
+  position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
+  font-size:.85rem; opacity:.7; pointer-events:none;
+}
+
+/* ========== ธีมตามสภาพอากาศ (ใช้คลาสบน body) ========== */
+body.clear .bg-anim{
+  background: radial-gradient(1200px 800px at 20% -10%, rgba(255,255,255,.08), transparent 60%),
+              radial-gradient(1000px 700px at 120% 110%, rgba(255,255,255,.06), transparent 50%),
+              linear-gradient(120deg, #0ea5e9, #38bdf8 50%, #0ea5e9);
+}
+body.clouds .bg-anim{
+  background: linear-gradient(160deg, #3a4a5e, #6b7a8f 60%, #2b3747);
+}
+body.rain .bg-anim{
+  background: linear-gradient(160deg, #0f172a, #1e293b 55%, #0b1220);
+}
+body.thunderstorm .bg-anim{
+  background: linear-gradient(150deg, #0b0f1a, #111827 55%, #000);
+  animation-duration: 14s;
+}
+body.snow .bg-anim{
+  background: linear-gradient(150deg, #e0f2fe, #bfe1ff 60%, #dbeafe);
+  filter: saturate(1.2);
+}
+body.mist .bg-anim{
+  background: linear-gradient(140deg, #94a3b8, #a8b1c7 60%, #8b9bb0);
+  filter: grayscale(.15);
+}
+
+/* --- ใช้ CSS เดิมทั้งหมด และเพิ่มส่วนนี้ต่อท้าย --- */
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    border-bottom: 1px solid #006494;
+    padding-bottom: 0.5rem;
+}
+
+#refresh-btn {
+    background: none;
+    border: 1px solid #00A6FB;
+    color: #00A6FB;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+#refresh-btn:hover {
+    background: #00A6FB;
+    color: #051923;
+}
+
+#favorites-container {
+    margin-top: 1rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.weather-card {
+    background: #051923;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border-left: 5px solid #00A6FB;
+    text-align: left;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.weather-card h3 {
+    margin: 0;
+    color: #E0E1DD;
+}
+
+.weather-card .temp {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.weather-card .remove-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 24px;
     text-align: center;
 }
 
-h1 {
-    color: #00A6FB;
+/* จำกัดความสูงลิสต์เมืองโปรดให้เลื่อนในกรอบ */
+#favorites-container {
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
-#search-form {
-    display: flex;
-    gap: 0.5rem;
-    margin: 1.5rem 0;
-}
+/* การ์ดตัวอย่าง (กันข้อความล้น) */
+.weather-card { display:flex; justify-content:space-between; gap:12px; }
+.weather-card h3, .weather-card p { margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 70%; }
 
-#city-input {
-    flex-grow: 1;
-    padding: 0.75rem;
-    border: 1px solid #006494;
-    border-radius: 0.5rem;
-    background: #051923;
-    color: #E0E1DD;
-    font-size: 1rem;
+.fav-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: crimson;
+  color: #fff;
+  cursor: pointer;
 }
-
-#search-form button {
-    padding: 0.75rem 1rem;
-    background-color: #00A6FB;
-    color: #051923;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-#search-form button:hover {
-    background-color: #0582CA;
-}
-
-.weather-info {
-    margin-top: 1.5rem;
-    min-height: 150px;
-}
-
-.weather-info .temp {
-    font-size: 3rem;
-    font-weight: bold;
-    margin: 0.5rem 0;
-}
-
-.error {
-    color: #ff4d4d;
-    font-weight: bold;
+.fav-btn:hover {
+  background: darkred;
 }
