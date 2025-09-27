@@ -113,38 +113,51 @@ getAllAgents: (req, res) => {
   // 🔄 TODO #3: นักศึกษาทำเอง (15 นาที - ยากสุด)
   // PATCH /api/agents/:id/status  
   updateAgentStatus: (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status, reason } = req.body;
+  try {
+    const { id } = req.params;
+    const { status, reason } = req.body;
 
-      // TODO: หา agent จาก id
-      const agent = agents.get(id);
-      if (!agent) {
-        return sendError(res, API_MESSAGES.AGENT_NOT_FOUND, 404);
-      }
-      // TODO: ตรวจสอบว่า agent มีอยู่ไหม
-      // TODO: validate status ด้วย AGENT_STATUS
-      const validStatuses = Object.values(AGENT_STATUS);
-      if (!validationStatuses.includes(status)) {
-        return sendError(res, `Invalid status: ${status}`, 400);
-      }
-    
-      // TODO: ตรวจสอบ valid transition ด้วย VALID_STATUS_TRANSITIONS
-      const current = agent.status;
-      const allowed = VALID_STATUS_TRANSITIONS[current] || [];
-      if (!allowed.includes(status)) {
-        return sendError(res, `Invalid status transition from ${current} to ${status}`, 400);
-      }
-      // TODO: เรียก agent.updateStatus(status, reason)
-      agent.updateAgentStatus(status, reason);
-      
-      // TODO: ส่ง response กลับ
-    return sendError(res, 'Status updated successfully', agent.toJSON());  
-    } catch (error) {
-      console.error('Error in updateAgentStatus:', error);
-      return sendError(res, API_MESSAGES.INTERNAL_ERROR, 500);
+    // หา agent
+    const agent = agents.get(id);
+    if (!agent) {
+      return sendError(res, API_MESSAGES.AGENT_NOT_FOUND, 404);
     }
-  },
+
+    // ตรวจสอบสถานะที่รับมา
+    const validStatuses = Object.values(AGENT_STATUS);
+    if (!validStatuses.includes(status)) {
+      return sendError(res, `Invalid status: ${status}`, 400);
+    }
+
+    // ตรวจสอบ transition
+    const current = agent.status;
+    const allowed = VALID_STATUS_TRANSITIONS[current] || [];
+    if (!allowed.includes(status)) {
+      return sendError(
+        res,
+        `Invalid status transition from ${current} to ${status}`,
+        400
+      );
+    }
+
+    // อัปเดตสถานะ (รองรับทั้งมี method หรืออัปเดตตรง)
+    if (typeof agent.updateStatus === 'function') {
+      agent.updateStatus(status, reason);
+    } else if (typeof agent.updateAgentStatus === 'function') {
+      agent.updateAgentStatus(status, reason);
+    } else {
+      agent.status = status;
+      if (reason !== undefined) agent.statusReason = reason;
+      agent.updatedAt = new Date();
+    }
+
+    // ส่งกลับ success (อย่าใช้ sendError)
+    return sendSuccess(res, 'Status updated successfully', agent.toJSON());
+  } catch (error) {
+    console.error('Error in updateAgentStatus:', error);
+    return sendError(res, API_MESSAGES.INTERNAL_ERROR, 500);
+  }
+},
 
   // ✅ ให้ code สำเร็จ
   // DELETE /api/agents/:id
