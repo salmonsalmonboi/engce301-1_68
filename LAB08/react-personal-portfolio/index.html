@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <div id="loading">
+  <div class="spinner"></div>
+  <p class="loading-text">Loading...</p>
+</div>
+
+<!-- Script ให้โหลด 3 วินาที -->
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const root = document.getElementById('root');
+    const loader = document.getElementById('loading');
+    if (root && loader) {
+      setTimeout(() => {
+        root.style.display = 'block';
+        loader.style.display = 'none';
+      }, 3000); // 3 วินาที
+    }
+  });
+</script>
+
+  </body>
+</html>
